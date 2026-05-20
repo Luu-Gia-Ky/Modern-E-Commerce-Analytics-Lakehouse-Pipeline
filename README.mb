@@ -1,0 +1,21 @@
+# Modern E-Commerce Analytics Lakehouse Pipeline
+
+An end-to-end Data Engineering pipeline simulating a production-grade modern data lakehouse architecture for e-commerce analytical tracking. 
+
+## 🛠️ Tech Stack & Architecture
+- **Orchestration:** Apache Airflow
+- **Processing Engine:** Apache Spark (PySpark)
+- **Data Warehouse & Storage:** PostgreSQL & Parquet File Format
+- **Transformation & Modeling:** dbt (Data Build Tool)
+- **Infrastructure:** Docker & Docker Compose
+
+## 🚀 Key Engineering Highlights
+1. **Medallion Architecture:** Raw JSON logs (Bronze) -> Partitioned Cleaned Parquet (Silver) -> Dimension/Fact Tables in PostgreSQL Marts (Gold).
+2. **Defensive Pipeline Design:** Implemented tasks with automated retries, rigorous logging, and explicit error simulation handling.
+3. **Data Quality First:** Every daily run triggers `dbt test` assertions ensuring zero data anomalies make it to the business dashboards.
+
+## 🛠️ Quick Start
+1. Clone the repository:
+```bash
+git clone [https://github.com/yourusername/ecommerce-lakehouse-pipeline.git](https://github.com/yourusername/ecommerce-lakehouse-pipeline.git)
+cd ecommerce-lakehouse-pipeline
