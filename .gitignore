@@ -1,0 +1,37 @@
+# ==========================================
+# Modern E-Commerce Analytics Lakehouse Pipeline
+# .gitignore
+# ==========================================
+
+# Raw Data & Database Storage (Bảo mật dữ liệu thô và DB volumes)
+data/
+logs/
+pgdata/
+airflow_db_data/
+
+# Python Cache & Environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+env/
+venv/
+.venv/
+.env
+.env.*
+
+# dbt Compilation Artifacts & Logs
+dbt_analytics/target/
+dbt_analytics/dbt_packages/
+dbt_analytics/dbt_modules/
+dbt_analytics/logs/
+dbt_analytics/.user.yml
+
+# IDEs & System files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
