@@ -107,12 +107,12 @@ You should see:
 ### 1. End-to-End Orchestration via Apache Airflow
 The entire Medallion architecture pipeline executes successfully with built-in retry mechanisms and automated task dependencies:
 
-![Apache Airflow DAG Pipeline](images/airflow_pipeline.png)
+![Apache Airflow DAG Pipeline](images/airflow_pipeline.jpg)
 
 ### 2. Gold Layer Analytics Marts in PostgreSQL (DBeaver View)
 Final business metrics are aggregated and materialized into the `marts.fct_daily_sales` table, optimized for downstream BI dashboard consumption:
 
-![DBeaver Data Warehouse Results](images/dbeaver_result.png)
+![DBeaver Data Warehouse Results](images/dbeaver_result%20.jpg)
 
 ---
 
