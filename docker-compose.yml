@@ -1,0 +1,94 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ec_postgres
+    environment:
+      POSTGRES_USER: warehouse_user
+      POSTGRES_PASSWORD: warehouse_password
+      POSTGRES_DB: ecommerce_dw
+    ports:
+      - "5433:5432"  # Giữ nguyên port ngoài 5433 của bạn để tránh trùng port máy cá nhân
+    volumes:
+      - ./sql/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  airflow-db:
+    image: postgres:15-alpine
+    container_name: ec_airflow_db
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  spark:
+    image: apache/spark:3.5.1-scala2.12-java17-python3-r-ubuntu
+    container_name: ec_spark
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      # SỬA: Đường dẫn thư mục gốc của image apache/spark là /opt/spark chứ không phải /opt/bitnami/spark
+      - ./dags/scripts:/opt/spark/scripts
+      - ./data:/opt/spark/data
+    restart: unless-stopped
+
+  airflow:
+    build: .
+    image: custom-airflow:2.7.2
+    container_name: ec_airflow
+    user: "0:0"
+    depends_on:
+      - airflow-db
+      - postgres
+      - spark
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./dbt_analytics:/opt/airflow/dbt_analytics
+      - ./data:/opt/airflow/data
+    ports:
+      - "8081:8080"
+    # SỬA: Lệnh command của bạn dùng `|| true &&` sai cú pháp logic khiến webserver không bao giờ chạy được khi lệnh tạo user chạy lại lần 2. 
+    command: >
+      bash -c "
+      airflow db migrate &&
+      (airflow users create --username admin --password admin --firstname admin --lastname admin --role Admin --email admin@example.com || true) &&
+      exec airflow webserver
+      "
+    restart: unless-stopped
+
+  airflow-scheduler:
+    build: .
+    image: custom-airflow:2.7.2
+    container_name: ec_airflow_scheduler
+    user: "0:0"
+    # SỬA: Đổi phụ thuộc từ 'airflow' (webserver) sang 'airflow-db'. Scheduler chỉ cần DB sẵn sàng để quét metadata chứ không cần webserver.
+    depends_on:
+      - airflow-db
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./dbt_analytics:/opt/airflow/dbt_analytics
+      - ./data:/opt/airflow/data
+    command: airflow scheduler
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  airflow_db_data:
